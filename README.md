@@ -1,169 +1,320 @@
-# Flipkart Product Pricing & Discount Analysis
+# 🛒 Flipkart Product Pricing & Discount Analysis
 
-> Analyzing how Flipkart can optimize pricing, discounts, and product positioning to increase sales and customer satisfaction.
+![Power BI](https://img.shields.io/badge/Power%20BI-Dashboard-yellow?logo=powerbi)
+![Python](https://img.shields.io/badge/Python-Data%20Analysis-blue?logo=python)
+![Pandas](https://img.shields.io/badge/Pandas-EDA-black?logo=pandas)
+![Status](https://img.shields.io/badge/Project-Completed-brightgreen)
+
+## 📌 Project Overview
+
+This project analyzes Flipkart's product catalogue (2015–2016) to understand pricing strategies, discount patterns, category distribution, and catalogue quality.
+
+The project follows an end-to-end data analytics workflow starting from raw data cleaning in Python, performing Exploratory Data Analysis (EDA), engineering analytical features, and finally building an interactive Power BI dashboard for business decision-making.
+
+The objective is not simply to visualize the data but to answer practical business questions related to pricing optimization, product positioning, and catalogue quality.
 
 ---
 
-## Project Structure
+# 🎯 Business Problem
 
-```
-flipkart/
-│
-├── dashboard/
-│    ├── flipkart_dashboard.pbix      # Power BI dashboard source file
-│    └── flipkart_dashboard.pdf       # Exported dashboard (PDF)
+Flipkart maintains a catalogue containing thousands of products spread across hundreds of categories and brands.
+
+The business wants to understand:
+
+- Which product categories dominate the catalogue?
+- Which categories receive the highest discounts?
+- How are products distributed across price segments?
+- Do expensive products receive larger discounts?
+- Which brands have the largest catalogue presence?
+- How complete and reliable is the catalogue information?
+
+Answering these questions helps improve pricing strategy, merchandising decisions, and catalogue standardization.
+
+---
+
+# 🎯 Project Objectives
+
+- Clean and prepare raw Flipkart catalogue data
+- Handle missing values and duplicate listings
+- Engineer useful analytical features
+- Perform Exploratory Data Analysis
+- Discover pricing and discount patterns
+- Evaluate catalogue quality
+- Build an interactive Power BI dashboard
+- Generate business insights and recommendations
+
+---
+
+# 📂 Dataset Information
+
+**Dataset Name**
+
+Flipkart Product Catalogue Dataset
+
+**Source**
+
+Public Flipkart catalogue dataset (2015–2016)
+
+**Original Records**
+
+20,000
+
+**Final Cleaned Records**
+
+15,827
+
+**Features Used**
+
+- Brand
+- Product Name
+- Product Category Tree
+- Product Rating
+- Retail Price
+- Discounted Price
+
+---
+
+# 📁 Project Structure
+
+```text
+Flipkart_Product_Analysis/
 │
 ├── data/
-│    ├── flipkart_dataset.csv         # Raw dataset (~20,000 records)
-│    └── cleaned_flipkart_dataset.csv # Cleaned and processed dataset
+│   ├── flipkart_dataset.csv
+│   └── cleaned_flipkart_dataset.csv
 │
-├── notebook/
-│    └── analysis.ipynb               # End-to-end analysis notebook
+├── notebooks/
+│   ├── 01_Data_Understanding_&_Cleaning.ipynb
+│   ├── 02_Exploratory_Data_Analysis.ipynb
+│   └── 03_Feature_Engineering.ipynb
 │
-└── README.md
+├── dashboard/
+│   ├── Flipkart_Dashboard.pbix
+│   ├── Dashboard.pdf
+│   └── Dashboard.png
+│
+├── reports/
+│   ├── 01_Business_Requirement_Document.md
+│   ├── 02_Data_Cleaning_Report.md
+│   ├── 03_EDA_Report.md
+│   ├── 04_Business_Insights_Report.md
+│   ├── 05_Dashboard_Documentation.md
+│   ├── 06_Executive_Summary.md
+│   ├── 07_Final_Project_Report.md
+│   └── 08_Data_Dictionary.md
+│
+├── README.md
+├── requirements.txt
+└── LICENSE
 ```
 
 ---
 
-## Business Problem
+# ⚙️ Tools & Technologies
 
-Flipkart (2015–2016) carried thousands of products across hundreds of categories with varying pricing and discount strategies. This project investigates:
+### Programming
 
-- Which categories and brands dominate the catalogue?
-- How are discounts distributed — and do higher-priced products get discounted less?
-- Where are the data quality gaps (missing brands, missing ratings) that limit deeper analysis?
+- Python
 
----
+### Libraries
 
-## Dataset
+- Pandas
+- NumPy
+- Matplotlib
+- Seaborn
 
-| Property | Details |
-|---|---|
-| Source file | `flipkart_dataset.csv` |
-| Time period | 2015 – 2016 |
-| Raw records | ~20,000 rows |
-| Original columns | 15 (uniq_id, crawl_timestamp, product_url, product_name, product_category_tree, pid, retail_price, discounted_price, image, is_FK_advantage_product, description, product_rating, overall_rating, brand, product_specifications) |
-| Columns used | brand, product_name, product_category_tree, product_rating, retail_price, discounted_price |
+### BI Tool
 
-### Why only 6 columns?
+- Power BI
 
-| Excluded column(s) | Reason |
-|---|---|
-| uniq_id, product_url, pid, image, is_FK_advantage_product, description, product_specifications | No analytical value for the pricing/discount business problem |
-| overall_rating | 91% missing values (18,083 nulls) — too sparse to use |
-| crawl_timestamp | Not needed — no time-series analysis in scope |
+### Other
+
+- DAX
+- Git
+- GitHub
 
 ---
 
-## Data Cleaning Steps
+# 🧹 Data Cleaning Process
 
-1. **Type conversion** — `product_rating`, `retail_price`, and `discounted_price` converted from object to numeric; non-numeric strings coerced to `NaN`.
-2. **Dropped price nulls** — 78 rows with missing `retail_price` or `discounted_price` removed (small enough to drop safely).
-3. **Filled brand nulls** — 5,864 missing brand values replaced with `"Unknown"` to preserve rows for category-level analysis.
-4. **Deduplication** — rows duplicate on `(brand, product_name, retail_price, discounted_price)` removed. Note: same product name at a different price is kept as a distinct listing.
-5. **Feature engineering** — `main_category` extracted from `product_category_tree` by parsing the first level of the category path; `discount_percentage` derived as `((retail_price − discounted_price) / retail_price) × 100`.
-6. **Saved** to `cleaned_flipkart_dataset.csv` (15,827 rows, 10 columns).
+The raw dataset was cleaned through several preprocessing steps.
 
----
+### Removed
 
-## Cleaned Dataset Overview
+- Exact duplicate records
+- Rows with missing price information
 
-| Metric | Value |
-|---|---|
-| Total records | 15,827 |
-| Unique product names | 12,626 |
-| Unique brands | 3,486 |
-| Unique main categories | 251 |
-| Average retail price | ₹3,324 |
-| Average discount | 39.4% |
-| Products with rating data | 10.2% (1,620 rows) |
-| Unknown brand rows | 28.9% (4,574 rows) |
+### Missing Values
 
----
+Brand
 
-## Analysis & Key Findings
+- Filled using **Unknown**
 
-### Category Analysis
-- **Clothing** leads with the most listings (~4,427 rows), followed by **Jewellery** (2,925) and **Automotive** (989).
-- **Furniture** has the highest average retail price (~₹22,594), distantly followed by Automation & Robotics (~₹20,000).
-- Most products are priced **under ₹500** — 47% of the catalogue falls in the lowest price bucket.
+Product Rating
 
-### Discount Analysis
-- Overall average discount is **39.4%**, with most products offering discounts in the **40–60% range**.
-- **Lower-priced products get deeper discounts**: the `<₹500` bucket averages 46% off, while the `₹5K+` bucket averages only 22%.
-- The scatter plot of retail price vs. discount percentage confirms that discount depth drops as price increases.
+- Converted to numeric
+- "No rating available" converted to NaN
 
-### Brand Analysis
-- **28.9%** of products have no brand information (tagged "Unknown"), limiting brand-level conclusions.
-- Among named brands, **Allure Auto** leads in product count (468), followed by Voylla (266) and Karatcraft (211).
-- **Clothing** has the highest number of unique competing brands.
-- **Rajcraft** offers the highest average discount percentage among named brands.
+### Feature Engineering
 
-### Rating Analysis
-- Only **10.2%** of products have a numeric rating — results are statistically unreliable and should be treated with caution.
-- No meaningful correlation between product rating and retail price could be established due to the data sparsity.
+Created:
+
+- Discount Percentage
+- Main Category
+- Sub Category
+- Price Bucket
 
 ---
 
-## Dashboard
+# 📊 Exploratory Data Analysis
 
-The Power BI dashboard (`dashboard/flipkart_dashboard.pbix`) provides interactive views across:
+EDA was performed to understand:
 
-- Top product categories by listing volume
-- Average retail price across categories
-- Product distribution across price segments (< ₹500, ₹500–1K, ₹1K–2K, ₹2K–5K, ₹5K+)
-- Discount depth distribution by category and brand
-- Leading brands by product count
-- Data quality indicators (unknown brands, rating coverage)
+- Product distribution
+- Category dominance
+- Brand distribution
+- Retail price distribution
+- Discount distribution
+- Rating availability
+- Pricing vs discount relationship
+- Price segmentation
+- Brand diversity
 
-A static export is available at `dashboard/flipkart_dashboard.pdf`.
+Several statistical summaries and visualizations were created before dashboard development.
 
 ---
 
-## How to Run
+# 📈 Dashboard Features
 
-### Prerequisites
+The Power BI dashboard includes interactive filters and business-focused visualizations.
+
+## KPI Cards
+
+- Total Products
+- Average Discount (%)
+- Average Retail Price
+- Total Identified Brands
+
+## Filters
+
+- Main Category
+- Price Bucket
+- Brand
+
+## Visualizations
+
+- Top Categories by Product Listings
+- Average Price by Category
+- Product Distribution by Price Range
+- Top Brands by Listings
+- Average Discount by Category
+- Average Discount by Price Range
+- Price vs Discount Relationship (Scatter Plot)
+
+## Data Quality Section
+
+- Unknown Brand %
+- Products with Rating %
+- Total Categories
+
+## Business Insight Cards
+
+- Category competition
+- Mass-market pricing
+- Discount concentration
+- Missing brand information
+- Rating data limitation
+
+---
+
+# 📊 Key Findings
+
+- Cleaned catalogue contains **15,827 products**
+- Average discount is **39.41%**
+- Clothing is the largest product category
+- Nearly half of the products are priced below ₹500
+- Furniture has the highest average retail price
+- Around **29%** of products have missing brand information
+- Only around **10%** of products contain rating data
+- Discount percentages remain relatively consistent across categories
+
+---
+
+# 💼 Business Recommendations
+
+- Improve catalogue quality by enriching missing brand information.
+- Standardize product metadata across categories.
+- Investigate categories offering unusually high discounts.
+- Use category-level pricing strategies rather than uniform discounting.
+- Collect additional customer behaviour data (orders, sales, reviews) for more advanced analytics.
+
+---
+
+# 📌 Business Value
+
+This project demonstrates how descriptive analytics can support:
+
+- Pricing optimization
+- Product positioning
+- Catalogue quality assessment
+- Category performance analysis
+- Business decision making
+
+---
+
+# 📸 Dashboard Preview
+
+> *(Insert dashboard screenshot here)*
+
+Example:
+
 ```
-Python 3.8+
-pandas
-matplotlib
-seaborn
-jupyter
+dashboard/Dashboard.png
 ```
-
-### Install dependencies
-```bash
-pip install pandas matplotlib seaborn jupyter
-```
-
-### Run the notebook
-```bash
-cd flipkart/
-jupyter notebook notebook/analysis.ipynb
-```
-
-The notebook expects the raw data at `../data/flipkart_dataset.csv` relative to the notebook directory. The cleaned dataset is saved automatically to `../data/cleaned_flipkart_dataset.csv` after running the cleaning cells.
 
 ---
 
-## Limitations
+# 🚀 Future Improvements
 
-- **Rating data is unreliable** — 91% of product ratings are missing; any rating-based conclusions should be treated as indicative only.
-- **No time-series analysis** — the crawl timestamp was excluded; trends over 2015–2016 are not explored.
-- **Brand coverage** — nearly 29% of products have no brand attribution, which constrains brand-level segmentation.
-- **Snapshot data** — this is a scraped catalogue snapshot, not transactional sales data; "product count" is a proxy for catalogue presence, not actual sales volume.
+Potential extensions include:
 
----
-
-## Tools Used
-
-| Tool | Purpose |
-|---|---|
-| Python (pandas) | Data loading, cleaning, feature engineering |
-| Matplotlib / Seaborn | Exploratory visualizations in the notebook |
-| Power BI | Interactive dashboard |
-| Jupyter Notebook | Analysis and documentation |
+- Sales analysis
+- Customer segmentation
+- Inventory optimization
+- Time-series pricing trends
+- Predictive pricing models
+- Interactive Tableau dashboard
+- Streamlit deployment
+- SQL integration
 
 ---
 
-*Data source: Flipkart product catalogue snapshot (2015–2016)*
+# 🎓 Skills Demonstrated
+
+- Data Cleaning
+- Data Wrangling
+- Exploratory Data Analysis
+- Feature Engineering
+- Data Visualization
+- Dashboard Design
+- Business Analytics
+- DAX
+- Power BI
+- Python Programming
+- GitHub Project Documentation
+
+---
+
+# 👨‍💻 Author
+
+**Akhil T V**
+
+Aspiring Data Analyst | Python | SQL | Power BI | Tableau | Machine Learning
+
+GitHub : https://github.com/AKHIL572
+
+LinkedIn : https://www.linkedin.com/in/akhil-t-v/
+
+---
+
+# ⭐ If you found this project useful, consider giving this repository a Star.
